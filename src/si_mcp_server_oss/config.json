@@ -1,0 +1,74 @@
+{
+  "io_metrics": [
+    {
+      "name": "volume_overall_read_io_rate",
+      "description": "The rate of read I/O operations per second for the volume"
+    },
+    {
+      "name": "volume_overall_write_io_rate",
+      "description": "The rate of write I/O operations per second for the volume"
+    },
+    {
+      "name": "volume_overall_total_io_rate",
+      "description": "The total number of I/O operations (read + write) per second for the volume"
+    }
+  ],
+  "data_rate_metrics": [
+    {
+      "name": "volume_read_data_rate",
+      "description": "The amount of data read from the volume per second (in bytes/sec)"
+    },
+    {
+      "name": "volume_write_data_rate",
+      "description": "The amount of data write from the volume per second (in bytes/sec)"
+    },
+    {
+      "name": "volume_total_data_rate",
+      "description": "Total data read and written per second for the volume (read + write)"
+    }
+  ],
+  "response_time_metrics": [
+    {
+      "name": "volume_read_response_time",
+      "description": "The average time taken to complete read operations on the volume"
+    },
+    {
+      "name": "volume_write_response_time",
+      "description": "The average time taken to complete write operations on the volume"
+    },
+    {
+      "name": "volume_total_response_time",
+      "description": "The overall average response time for read and write operations on the volume"
+    }
+  ],
+  "transfer_size_metrics": [
+    {
+      "name": "volume_read_transfer_size",
+      "description": "The average amount of bytes transferred per read per operation"
+    },
+    {
+      "name": "volume_write_transfer_size",
+      "description": "The average amount of bytes transferred per write per operation"
+    },
+    {
+      "name": "volume_total_transfer_size",
+      "description": "Total data transferred for read and write operation"
+    }
+  ],
+  "cpu_utilization_metrics": [
+    {
+      "name": "cpu_utilization",
+      "description": "The percentage of CPU capacity currently being utilized"
+    }
+  ],
+  "capacity_metrics": [
+    {
+      "name": "used_capacity",
+      "description": "The amount of storage currently used on the system or volume"
+    },
+    {
+      "name": "available_capacity",
+      "description": "The amount of storage available for use on the system or volume"
+    }
+  ]
+}
