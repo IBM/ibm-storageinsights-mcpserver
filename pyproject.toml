@@ -1,0 +1,32 @@
+[project]
+name = "si-mcp-server-oss"
+version = "0.1.0"
+description = "An open-source MCP (Model Context Protocol) server for IBM Storage Insights, providing real-time observability for the data center. This server supports components such as Storage System Alerts, Notifications, Volume and System Details, Used/Usable Capacity tracking, and metric fetch (performance and capacity) for both storage systems and tenants."
+readme = "README.md"
+requires-python = ">=3.11"
+
+authors = [
+    { name = "Archana Chinnaiah", email = "archchin@in.ibm.com" },
+    { name = "Binayak Dutta", email = "binayakdutta@in.ibm.com" },
+    { name = "Shubham Darokar", email = "shubham.dipak.darokar1@ibm.com" },
+    { name = "Utkarsh Singh", email = "utkarsh.singh1@ibm.com" },
+]
+
+license = { text = "Apache-2.0" }
+
+dependencies = [
+    "asyncio-mqtt>=0.16.2,<0.17.0",
+    "httpx>=0.28.1,<0.29.0",
+    "mcp>=1.9.3,<2.0.0",
+    "pydantic>=2.11.5,<3.0.0",
+    "python-dotenv>=1.1.0,<2.0.0",
+]
+[project.scripts]
+si-mcp-server-oss = "si-mcp-server-oss.server:main"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.0.0,<8.0.0",
+    "black>=23.0.0,<24.0.0",
+    "mypy>=1.0.0,<2.0.0",
+]
