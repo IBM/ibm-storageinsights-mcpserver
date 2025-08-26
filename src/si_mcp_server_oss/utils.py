@@ -139,7 +139,6 @@ async def call_ibm_storageinsights_api(
     """Make a request to the API with proper error handling."""
     logger.info(f"Fetch the token for SI API invocation for tenant id {tenant_id}")
     token = await fetch_token(tenant_id, api_key, logger)
-
     headers = {"x-api-token": f"{token}", "Content-Type": "application/json", "x-integration": "si-mcp", "x-integration-version": "v1"}
     async with httpx.AsyncClient() as client:
         try:
@@ -156,3 +155,6 @@ async def call_ibm_storageinsights_api(
             logger.error(f"Encountered error in API call. Error: {e}")
             raise e
     return result
+
+
+
