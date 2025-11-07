@@ -18,20 +18,24 @@ from mcp import types
 from mcp.server.fastmcp import FastMCP
 
 from logger import setup_logger
-from utils import (
+from constants import (
     IO_RATE_METRIC_TYPES,
     DATA_RATE_METRIC_TYPES,
     TRANSFER_SIZE_METRIC_TYPES,
     RESPONSE_TIME_METRIC_TYPES,
     CPU_UTILIZATION_METRICS,
     CAPACITY_METRICS,
+    DURATION,
+    SeverityType,
+    ComponentType,
 )
 from utils import (
     resolve_tenant_id,
     call_ibm_storageinsights_api,
+)
+from settings import (
     SI_BASE_URL,
     SI_TENANT_ID,
-    DURATION,
 )
 
 # Set up Configured logger
@@ -45,19 +49,32 @@ logger.info("Started mcp server")
 @server.tool()
 async def fetch_tenant_alerts(
     tenant_id_input: Optional[str] = SI_TENANT_ID,
+    duration: Optional[str] = DURATION,
+    severity: Optional[List[SeverityType]] = None,
 ) -> types.CallToolResult:
     """
     Get alerts for tenant.
 
     Args:
         tenant_id_input: Storage Insights Tenant id
+        duration: Alerts requested for a particular duration (e.g., "20m", "5h", "1d").
+        severity: Alerts requested for a list of severities to filter by (The severity types are : critical, warning, info, critical_acknowledged, warning_acknowledged, info_acknowledged).
     """
     try:
         logger.debug("Tool invoked: fetch_tenant_alerts")
         tenant_id, api_key = resolve_tenant_id(tenant_id=tenant_id_input, logger=logger)
+        params = {}
+        if duration:
+            params["duration"] = duration
+        if severity:
+            params["severity"] = [s.value for s in severity]
         rest_url = f"{SI_BASE_URL}/tenants/{tenant_id}/alerts"
         result = await call_ibm_storageinsights_api(
-            url=rest_url, logger=logger, tenant_id=tenant_id, api_key=api_key
+            url=rest_url,
+            logger=logger,
+            params=params,
+            tenant_id=tenant_id,
+            api_key=api_key,
         )
         logger.debug(
             f"Received data for tool call: fetch_tenant_alerts. Returning result to MCP Client: {result}"
@@ -77,19 +94,32 @@ async def fetch_tenant_alerts(
 @server.tool()
 async def fetch_tenant_notifications(
     tenant_id_input: Optional[str] = SI_TENANT_ID,
+    duration: Optional[str] = DURATION,
+    severity: Optional[SeverityType] = None,
 ) -> types.CallToolResult:
     """
     Get notification for tenant.
 
     Args:
          tenant_id_input: Storage Insights Tenant id
+         duration: Notifications requested for a particular duration (e.g., "5h", "1d").
+         severity: Notifications requested for a particular severity (The severity types are : critical, warning, info, critical_acknowledged, warning_acknowledged, info_acknowledged).
     """
     try:
         logger.debug("Tool invoked: fetch_tenant_notifications")
         tenant_id, api_key = resolve_tenant_id(tenant_id=tenant_id_input, logger=logger)
+        params = {}
+        if duration:
+            params["duration"] = duration
+        if severity:
+            params["severity"] = severity.value
         rest_url = f"{SI_BASE_URL}/tenants/{tenant_id}/notifications"
         result = await call_ibm_storageinsights_api(
-            url=rest_url, logger=logger, tenant_id=tenant_id, api_key=api_key
+            url=rest_url,
+            logger=logger,
+            params=params,
+            tenant_id=tenant_id,
+            api_key=api_key,
         )
         logger.debug(
             f"Received data for tool call: fetch_tenant_notifications. Returning result to MCP Client: {result}"
@@ -140,7 +170,10 @@ async def fetch_storage_systems(
 
 @server.tool()
 async def fetch_system_notifications(
-    system_id: str, tenant_id_input: Optional[str] = SI_TENANT_ID
+    system_id: str,
+    duration: Optional[str] = DURATION,
+    severity: Optional[SeverityType] = None,
+    tenant_id_input: Optional[str] = SI_TENANT_ID,
 ) -> types.CallToolResult:
     """
     Get notifications of system under the tenant.
@@ -148,13 +181,24 @@ async def fetch_system_notifications(
     Args:
          tenant_id_input: Storage Insights Tenant id
          system_id: Storage System id
+         duration: Notifications requested for a particular duration (e.g., "5h", "1d").
+         severity: Notifications requested for a particular severity (The severity types are : critical, warning, info, critical_acknowledged, warning_acknowledged, info_acknowledged).
     """
     try:
         logger.debug("Tool invoked: fetch_system_notifications")
         tenant_id, api_key = resolve_tenant_id(tenant_id=tenant_id_input, logger=logger)
+        params = {}
+        if duration:
+            params["duration"] = duration
+        if severity:
+            params["severity"] = severity.value
         rest_url = f"{SI_BASE_URL}/tenants/{tenant_id}/storage-systems/{system_id}/notifications"
         result = await call_ibm_storageinsights_api(
-            url=rest_url, logger=logger, tenant_id=tenant_id, api_key=api_key
+            url=rest_url,
+            logger=logger,
+            params=params,
+            tenant_id=tenant_id,
+            api_key=api_key,
         )
         logger.debug(
             f"Received data for tool call: fetch_system_notifications. Returning result to MCP Client: {result}"
@@ -190,7 +234,7 @@ async def fetch_system_details(
             url=rest_url, logger=logger, tenant_id=tenant_id, api_key=api_key
         )
         logger.debug(
-            f"Received data for tool call: fetch_system_notifications. Returning result to MCP Client: {result}"
+            f"Received data for tool call: fetch_system_details. Returning result to MCP Client: {result}"
         )
         return types.CallToolResult(
             content=[
@@ -494,48 +538,21 @@ async def fetch_system_capacity(
 
 @server.tool()
 async def fetch_system_components(
-    system_id: str, comp_type: str, tenant_id_input: Optional[str] = SI_TENANT_ID
+    system_id: str,
+    comp_type: ComponentType,
+    tenant_id_input: Optional[str] = SI_TENANT_ID,
 ) -> types.CallToolResult:
     """
     Get storage systems components (volumes, pools, enclosures, drives, fc-ports, ip-ports, host-connections, io-groups, managed-disks) for system under tenant.
     Args:
         tenant_id_input: Storage Insights Tenant id
         system_id: Storage System id
-        comp_type: component_type
+        comp_type: component_type and could contain only one of the following values - volumes, pools, enclosures, drives, fc-ports, ip-ports, host-connections, io-groups, managed-disks
     """
     try:
         logger.debug("Tool invoked: fetch_system_components")
         tenant_id, api_key = resolve_tenant_id(tenant_id=tenant_id_input, logger=logger)
-        if "volume" in comp_type.lower():
-            comp_type = "volumes"
-        elif "pool" in comp_type.lower():
-            comp_type = "pools"
-        elif "enclosure" in comp_type.lower():
-            comp_type = "enclosures"
-        elif "drive" in comp_type.lower():
-            comp_type = "drives"
-        elif "fc-port" in comp_type.lower():
-            comp_type = "fc-ports"
-        elif "ip-port" in comp_type.lower():
-            comp_type = "ip-ports"
-        elif "host connection" in comp_type.lower():
-            comp_type = "host-connections"
-        elif "iogroups" in comp_type.lower() or "io group" in comp_type.lower():
-            comp_type = "io-groups"
-        elif "mdisk" in comp_type.lower() or "managed disk" in comp_type.lower():
-            comp_type = "managed-disks"
-        else:
-            return types.CallToolResult(
-                isError=True,
-                content=[
-                    types.TextContent(
-                        type="text", text=f"Error: Component not supported"
-                    )
-                ],
-            )
-        rest_url = (
-            f"{SI_BASE_URL}/tenants/{tenant_id}/storage-systems/{system_id}/{comp_type}"
-        )
+        rest_url = f"{SI_BASE_URL}/tenants/{tenant_id}/storage-systems/{system_id}/{comp_type.value}"
         result = await call_ibm_storageinsights_api(
             url=rest_url, logger=logger, tenant_id=tenant_id, api_key=api_key
         )
@@ -556,7 +573,10 @@ async def fetch_system_components(
 
 @server.tool()
 async def fetch_system_alerts(
-    system_id: str, tenant_id_input: Optional[str] = SI_TENANT_ID
+    system_id: str,
+    duration: Optional[str] = DURATION,
+    severity: Optional[List[SeverityType]] = None,
+    tenant_id_input: Optional[str] = SI_TENANT_ID,
 ) -> types.CallToolResult:
     """
     Get alerts for system under tenant.
@@ -567,11 +587,20 @@ async def fetch_system_alerts(
     try:
         logger.debug("Tool invoked: fetch_system_alerts")
         tenant_id, api_key = resolve_tenant_id(tenant_id=tenant_id_input, logger=logger)
+        params = {}
+        if duration:
+            params["duration"] = duration
+        if severity:
+            params["severity"] = [s.value for s in severity]
         rest_url = (
             f"{SI_BASE_URL}/tenants/{tenant_id}/storage-systems/{system_id}/alerts"
         )
         result = await call_ibm_storageinsights_api(
-            url=rest_url, logger=logger, tenant_id=tenant_id
+            url=rest_url,
+            logger=logger,
+            params=params,
+            tenant_id=tenant_id,
+            api_key=api_key,
         )
         logger.debug(
             f"Received data for tool call: fetch_system_alerts. Returning result to MCP Client: {result}"

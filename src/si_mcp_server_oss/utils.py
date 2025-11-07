@@ -19,15 +19,14 @@ import time
 from typing import Optional, Any
 
 import httpx
-from dotenv import load_dotenv
 
-load_dotenv()
 
-SI_BASE_URL = os.getenv("SI_BASE_URL")
-SI_TENANT_ID = os.getenv("DEFAULT_SI_TENANT_ID")
-SI_API_KEY = os.getenv("DEFAULT_SI_API_KEY")
-CONFIG_FILE_PATH = os.getenv("CONFIG_FILE_PATH")
-DURATION = "12h"
+from settings import (
+    SI_BASE_URL,
+    SI_TENANT_ID,
+    SI_API_KEY,
+    CONFIG_FILE_PATH,
+)
 
 # Load the default and additional tenant-api mappings in case if multi-tenant view is required
 additional_tenant_api_mapping = json.loads(os.getenv("ADDITIONAL_TENANT_API_MAPPING"))
@@ -48,13 +47,6 @@ def get_metric_names(group_name: str):
     group = config.get(group_name, [])
     return [metric["name"] for metric in group]
 
-
-IO_RATE_METRIC_TYPES = get_metric_names("io_metrics")
-DATA_RATE_METRIC_TYPES = get_metric_names("data_rate_metrics")
-TRANSFER_SIZE_METRIC_TYPES = get_metric_names("transfer_size_metrics")
-RESPONSE_TIME_METRIC_TYPES = get_metric_names("response_time_metrics")
-CPU_UTILIZATION_METRICS = get_metric_names("cpu_utilization_metrics")
-CAPACITY_METRICS = get_metric_names("capacity_metrics")
 
 # Initialize the caches for re-using the short-lived token (when not expired) for SI API invocation
 token_cache = {}
