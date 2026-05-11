@@ -571,7 +571,7 @@ async def fetch_system_alerts(
             f"{SI_BASE_URL}/tenants/{tenant_id}/storage-systems/{system_id}/alerts"
         )
         result = await call_ibm_storageinsights_api(
-            url=rest_url, logger=logger, tenant_id=tenant_id
+            url=rest_url, logger=logger, tenant_id=tenant_id, api_key=api_key
         )
         logger.debug(
             f"Received data for tool call: fetch_system_alerts. Returning result to MCP Client: {result}"
